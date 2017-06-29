@@ -1,13 +1,13 @@
-# 实体对象
+# 實體對象
 
-实体对象就是对象的状态存储在数据库中的 Python 类型。每个实体对象的实例对应数据库的表中的一行。实体对象一般都代表着真实世界的对象。（例如，客户，产品）
+實體對象就是對象的狀態存儲在數據庫中的 Python 類型。每個實體對象的實例對應數據庫的表中的一行。實體對象一般都代表著真實世界的對象。（例如，客戶，產品）
 
-Pony 也提供一个实体对象关系表格编辑器，可以用来创建 Python 实体对象的定义。
+Pony 也提供一個實體對象關系表格編輯器，可以用來創建 Python 實體對象的定義。
 
-在创建实体对象的实例之前，你需要先映射实体对象到数据表。Pony 能够将实体对象映射到已经存在的表或者创建新的表。当映射生成之后，你就可以查询数据或者创建新的实例。
+在創建實體對象的實例之前，你需要先映射實體對象到數據表。Pony 能夠將實體對象映射到已經存在的表或者創建新的表。當映射生成之後，你就可以查詢數據或者創建新的實例。
 
-## 定义一个实体对象
-每个实体对象属于一个数据库。这就是为什么在定义实体对象之前，需要创建一个 `Database` 类型的对象：
+## 定義一個實體對象
+每個實體對象屬於一個數據庫。這就是為什麽在定義實體對象之前，需要創建一個 `Database` 類型的對象：
 ```python
 from pony.orm import *
 
@@ -16,19 +16,19 @@ db = Database("sqlite", "database.sqlite", create_db=True)
 class MyEntity(db.Entity):
     attr1 = Required(str)
 ```
-Pony 的 Database 对象有一个 `Entity` 属性，这个属性是需要存储在数据库的实体对象的必须继承的基类。
+Pony 的 Database 對象有一個 `Entity` 屬性，這個屬性是需要存儲在數據庫的實體對象的必須繼承的基類。
 
-## Entity 属性
-Entity 的属性就像类的属性一样，通过语法 `attr_name = kind(type)`定义。
+## Entity 屬性
+Entity 的屬性就像類的屬性一樣，通過語法 `attr_name = kind(type)`定義。
 
 ```python
 class Customer(db.Entity):
     name = Required(str)
     picture = Optional(buffer)
 ```
-你也可以在属性类型的括号中指定其他类型。
-我们将会在之后的章节中详细的讨论。
-Pony 有如下几种属性：
+你也可以在屬性類型的括號中指定其他類型。
+我們將會在之後的章節中詳細的討論。
+Pony 有如下幾種屬性：
 
 - Required
 - Optional
@@ -36,24 +36,24 @@ Pony 有如下几种属性：
 - Set
 
 ### Required 和 Optional
-基本上大部分的属性，都是 `Required` 和 `Optional` 类型。如果属性是被定义为 `Required`，那么任何时候都必须值，`Optional` 属性的值可以是空的。
+基本上大部分的屬性，都是 `Required` 和 `Optional` 類型。如果屬性是被定義為 `Required`，那麽任何時候都必須值，`Optional` 屬性的值可以是空的。
 
-### Optional 字符串属性
-如果这个属性没有赋予值，大部分情况下默认值是 `None`。但是当一个属性是字符串时，默认值是空字符串。在数据库中使用空字符串比使用 `NULL` 更实用。大部分框架也都是这么做的。空字符串也能提高搜索的索引速度。如果你想分配 `NULL` 到一个可选的字符串属性，你会收到一个 `ConstraintError` 异常。你可以通过设置 `nullable=True` 属性改变这种行为。然后空字符串和 `NULL` 在空字符串属性列都将是允许的，但是很少需要这么做。
+### Optional 字符串屬性
+如果這個屬性沒有賦予值，大部分情況下默認值是 `None`。但是當一個屬性是字符串時，默認值是空字符串。在數據庫中使用空字符串比使用 `NULL` 更實用。大部分框架也都是這麽做的。空字符串也能提高搜索的索引速度。如果你想分配 `NULL` 到一個可選的字符串屬性，你會收到一個 `ConstraintError` 異常。你可以通過設置 `nullable=True` 屬性改變這種行為。然後空字符串和 `NULL` 在空字符串屬性列都將是允許的，但是很少需要這麽做。
 
-Oracle 数据库中，空字符串和`NULL`是同样处理的。因此所有的 Oracle 数据库中的 `Optional` 属性， `nullable` 将会自动设置为 `True`。
+Oracle 數據庫中，空字符串和`NULL`是同樣處理的。因此所有的 Oracle 數據庫中的 `Optional` 屬性， `nullable` 將會自動設置為 `True`。
 
-如果一个字符串属性被作为唯一键或者作为唯一键组合的一部分，它的 `nullable` 将会自动设置为 `True`。
+如果一個字符串屬性被作為唯一鍵或者作為唯一鍵組合的一部分，它的 `nullable` 將會自動設置為 `True`。
 
-### 主键
-`PrimaryKey` 定义了数据库表中的主键。每一个实体都因该有一个主键。如果主键没有明确的指定，Pony 会隐含的创建。让我们看以下例子：
+### 主鍵
+`PrimaryKey` 定義了數據庫表中的主鍵。每一個實體都因該有一個主鍵。如果主鍵沒有明確的指定，Pony 會隱含的創建。讓我們看以下例子：
 ```python
 class Product(db.Entity):
     name = Required(str, unique=True)
     price = Required(Decimal)
     description = Optional(str)
 ```
-这个实体的定义方式和下面的方式是等价的：
+這個實體的定義方式和下面的方式是等價的：
 ```python
 class Product(db.Entity):
     id = PrimaryKey(int, auto=True)
@@ -61,58 +61,58 @@ class Product(db.Entity):
     price = Required(Decimal)
     description = Optional(str)
 ```
-Pony 自动添加的的主键总是名字叫 `id` 类型是 `int`。`auto=True` 参数意味着这个属性将会使用数据的自增或者序列功能自动增加。
+Pony 自動添加的的主鍵總是名字叫 `id` 類型是 `int`。`auto=True` 參數意味著這個屬性將會使用數據的自增或者序列功能自動增加。
 
-如果你自己指定了主键，那么类型和名字都是自定义的。例如我们可以指定 `Customer` 实例对象使用 custormer's 的 email 作为主键。
+如果你自己指定了主鍵，那麽類型和名字都是自定義的。例如我們可以指定 `Customer` 實例對象使用 custormer's 的 email 作為主鍵。
 ```python
 class Customer(db.Entity):
    email = PrimaryKey(str)
    name = Required(str)
 ```
 ### Set
-一个 `Set` 属性声明了一个集合。你可以指定另外一个实体对象作为 `Set` 属性的类型。这就是定义“对多”关系的方法，可以是“多对多”或者“一对多”。目前，Pony 还不能用 `Set`使用原始类型。我们计划以后加入这个特色功能。我们将在《使用关系》章节中更详细的讨论。
+一個 `Set` 屬性聲明了一個集合。你可以指定另外一個實體對象作為 `Set` 屬性的類型。這就是定義“對多”關系的方法，可以是“多對多”或者“一對多”。目前，Pony 還不能用 `Set`使用原始類型。我們計劃以後加入這個特色功能。我們將在《使用關系》章節中更詳細的討論。
 
 ### Composite keys
-Pony 完全支持 Composite keys，为了定义一组唯一键，你需要用 `Required` 定义每个键，然后将它们组合成组合主键。
+Pony 完全支持 Composite keys，為了定義一組唯一鍵，你需要用 `Required` 定義每個鍵，然後將它們組合成組合主鍵。
 ```python
 class Example(db.Entity):
     a = Required(int)
     b = Required(str)
     PrimaryKey(a, b)
 ```
-这里 `PrimaryKey(a, b)` 并没有创建新的属性，而是将括号中指定的键值组合为组合主键。每个实体对象，有且只有一个组合主键。
-为了创建第二个组合键，你需要像之前一样声明他们，然后使用 `composite_key`组合他们。
+這裏 `PrimaryKey(a, b)` 並沒有創建新的屬性，而是將括號中指定的鍵值組合為組合主鍵。每個實體對象，有且只有一個組合主鍵。
+為了創建第二個組合鍵，你需要像之前一樣聲明他們，然後使用 `composite_key`組合他們。
 ```python
 class Example(db.Entity):
     a = Required(str)
     b = Optional(int)
     composite_key(a, b)
 ```
-在数据库中，`composite_key(a,b)` 将会对应为 `UNIQUE("a","b")`约束条件。
-如果只有一个属性需要被设置为唯一的，你可以在创建键的地方指定 `unique=True` 属性。
+在數據庫中，`composite_key(a,b)` 將會對應為 `UNIQUE("a","b")`約束條件。
+如果只有一個屬性需要被設置為唯一的，你可以在創建鍵的地方指定 `unique=True` 屬性。
 ```python
 class Product(db.Entity):
     name = Required(str, unique=True)
 ```
 ### Composite indexes
-使用 `composite_index()` 就可以直接创建组合索引以加速数据检索，它可以用来组合两个或多个属性：
+使用 `composite_index()` 就可以直接創建組合索引以加速數據檢索，它可以用來組合兩個或多個屬性：
 ```python
 class Example(db.Entity):
     a = Required(str)
     b = Optional(int)
     composite_index(a, b)
 ```
-既可以使用属性，也可以使用属性的名字。
+既可以使用屬性，也可以使用屬性的名字。
 ```python
 class Example(db.Entity):
     a = Required(str)
     b = Optional(int)
     composite_index(a, 'b')
 ```
-如果你想对一个字段创建非唯一性的索引，你可以给这个属性指定 `index` 属性。这个属性将在本章之后的章节详细描述。
+如果你想對一個字段創建非唯一性的索引，你可以給這個屬性指定 `index` 屬性。這個屬性將在本章之後的章節詳細描述。
 
-## 属性的数据类型
-实体对象的属性就像的类型的一个属性那样声明，使用语句 `sttr_name = kind(type)`。定义属性的时候能用的数据类型如下：
+## 屬性的數據類型
+實體對象的屬性就像的類型的一個屬性那樣聲明，使用語句 `sttr_name = kind(type)`。定義屬性的時候能用的數據類型如下：
 
 - str
 - unicode
@@ -130,13 +130,13 @@ class Example(db.Entity):
 - LongUnicode - used for large strings
 - UUID
 
-`buffer` 和 `bytes` 类型是以二进制形式（BLOB）存储在数据库中的。`LongStr` 和 `LongUnicode` 是以 CLOB 形式存储。
+`buffer` 和 `bytes` 類型是以二進制形式（BLOB）存儲在數據庫中的。`LongStr` 和 `LongUnicode` 是以 CLOB 形式存儲。
 
-从 Pony Release 0.6 开始，增加了 Python3 的支持，我们建议使用  `str` 和 `LongStr` 替代 `Unicode` 和 `LongUnicode`。
+從 Pony Release 0.6 開始，增加了 Python3 的支持，我們建議使用  `str` 和 `LongStr` 替代 `Unicode` 和 `LongUnicode`。
 
-我们知道，Python3 和 Python2 处理字符串的方法是不同的。Python2 提供两种字符串类型 —— `str`(byte string) 和 `unicode` (unicode string)，因为 Python3 中用 `str` 代替了 unicode string ，移除 `unicode`。
+我們知道，Python3 和 Python2 處理字符串的方法是不同的。Python2 提供兩種字符串類型 —— `str`(byte string) 和 `unicode` (unicode string)，因為 Python3 中用 `str` 代替了 unicode string ，移除 `unicode`。
 
-在 release 0.6 之前，Pony 将 `str` 和 `unicode` 在数据库中都存储为 unicode 。但是对于 `str`的属性，在读取的时候必须将 unicode 转为 byte string。从 Pony Release 0.6 开始，Python2 中的 `str` 类型和 `unicode` 类型具有相同的行为。`str` 和 `unicode` 定义的属性完全一样 —— 在 Python 中和数据库中都是 unicode string。`LongStr` 和 `LongUnicode` 也是这样。。`LongStr` 现在只是 `LongUnicode` 的别称。如下定义，在 Python 中和数据库中都是 unicode。
+在 release 0.6 之前，Pony 將 `str` 和 `unicode` 在數據庫中都存儲為 unicode 。但是對於 `str`的屬性，在讀取的時候必須將 unicode 轉為 byte string。從 Pony Release 0.6 開始，Python2 中的 `str` 類型和 `unicode` 類型具有相同的行為。`str` 和 `unicode` 定義的屬性完全一樣 —— 在 Python 中和數據庫中都是 unicode string。`LongStr` 和 `LongUnicode` 也是這樣。。`LongStr` 現在只是 `LongUnicode` 的別稱。如下定義，在 Python 中和數據庫中都是 unicode。
 ```python
 attr1 = Required(str)
 # is the same as
@@ -146,29 +146,29 @@ attr3 = Required(LongStr)
 # is the same as
 attr4 = Required(LongUnicode)
 ``` 
-Python2 里，如果你需要表示字节数组，可以使用 `buffer` 类型，Python3 里，已经移除了 `buffer` 类型，可使 `bytes` 达到相同的目的。但是为了向后兼容性，我们依然保留了 `buffer` 作为 `bytes` 的别称。如果你使用 `import * from pony.orm`，别称也就已经导入了。
+Python2 裏，如果你需要表示字節數組，可以使用 `buffer` 類型，Python3 裏，已經移除了 `buffer` 類型，可使 `bytes` 達到相同的目的。但是為了向後兼容性，我們依然保留了 `buffer` 作為 `bytes` 的別稱。如果你使用 `import * from pony.orm`，別稱也就已經導入了。
 
-如果你的程序需要兼容 Python2 和 Python3 ，你应该使用 `buffer` 类型来表示二进制的属性。如果你的程序值运行在 Python3 下，你可以使用 `bytes`。
+如果你的程序需要兼容 Python2 和 Python3 ，你應該使用 `buffer` 類型來表示二進制的屬性。如果你的程序值運行在 Python3 下，你可以使用 `bytes`。
 ```python
 attr1 = Required(buffer) # Python 2 and 3
 
 attr2 = Required(bytes) # Python 3 only
 ```
-如果 Python2 中能使用 `bytes` 作为 `buffer`的别称那就`bytes` 作为最好了。但是那是不可能的，因为 [Python2.6 中增加了`bytes` 作为 `str` 的同义词](https://docs.python.org/2/whatsnew/2.6.html#pep-3112-byte-literals)。
+如果 Python2 中能使用 `bytes` 作為 `buffer`的別稱那就`bytes` 作為最好了。但是那是不可能的，因為 [Python2.6 中增加了`bytes` 作為 `str` 的同義詞](https://docs.python.org/2/whatsnew/2.6.html#pep-3112-byte-literals)。
 
-为了定义两个类型之间的关系，你也可以使用另外一个实体类型作为属性的类型。
+為了定義兩個類型之間的關系，你也可以使用另外一個實體類型作為屬性的類型。
 
-## 属性的选项
+## 屬性的選項
 
-基于变量的位置或关键词，你可以为属性定义额外的选项。
+基於變量的位置或關鍵詞，你可以為屬性定義額外的選項。
 
-### 字符串最大长度
-`String` 类型接收一个基于变量位置的参数作为字段最大长度的限定。
+### 字符串最大長度
+`String` 類型接收一個基於變量位置的參數作為字段最大長度的限定。
 ```python
 name = Required(str, 40)   #  VARCHAR(40)
 ```
-### 整数最大值
-对于 `int` 类型，你可以使用`size`关键词指定数据库中使用的整数类型的大小。这个参数接收一个数作为数据库中整数占用的位数。允许的值是 8,16,24,32和64。
+### 整數最大值
+對於 `int` 類型，你可以使用`size`關鍵詞指定數據庫中使用的整數類型的大小。這個參數接收一個數作為數據庫中整數占用的位數。允許的值是 8,16,24,32和64。
 ```python
 attr1 = Required(int, size=8)   # 8 bit - TINYINT in MySQL
 attr2 = Required(int, size=16)  # 16 bit - SMALLINT in MySQL
@@ -176,105 +176,105 @@ attr3 = Required(int, size=24)  # 24 bit - MEDIUMINT in MySQL
 attr4 = Required(int, size=32)  # 32 bit - INTEGER in MySQL
 attr5 = Required(int, size=64)  # 64 bit - BIGINT in MySQL
 ```
-你可以使用 `unsigned` 参数指定这个属性是无符号的。
+你可以使用 `unsigned` 參數指定這個屬性是無符號的。
 ```python
 attr1 = Required(int, size=8, unsigned=True) # TINYINT UNSIGNED in MySQL
 ```
 
-`unsigned` 参数默认是 `False` 如果 `unsigned` 是 `True`，但是没有指定 `size` 参数，`size` 将默认为 32位。
+`unsigned` 參數默認是 `False` 如果 `unsigned` 是 `True`，但是沒有指定 `size` 參數，`size` 將默認為 32位。
 
-如果当前数据库不支持指定的属性大小，则使用下一个更大的属性。例如，PostgreSQL 没有 `MEDIUMINT` 类型，如果指定 24位，那么使用 `INTEGER` 类型。
+如果當前數據庫不支持指定的屬性大小，則使用下一個更大的屬性。例如，PostgreSQL 沒有 `MEDIUMINT` 類型，如果指定 24位，那麽使用 `INTEGER` 類型。
 
-只有 MySQL 完全支持无符号类型。对于其他数据库将使用能够包含指定的无符号类型的所有值的有符号类型的类型。例如，在 PostgreSQL 中，16位无符号的属性，将会使用 `INTEGER` 类型。 64位的无符号数只能在 MySQL 和 Oracle 中实现。
+只有 MySQL 完全支持無符號類型。對於其他數據庫將使用能夠包含指定的無符號類型的所有值的有符號類型的類型。例如，在 PostgreSQL 中，16位無符號的屬性，將會使用 `INTEGER` 類型。 64位的無符號數只能在 MySQL 和 Oracle 中實現。
 
-当数据的大小指定了， Pony 会自动分配这个属性的 `min` 和 `max` 值。例如，一个有符号的 8位属性，可以接收 `min` 为 -128 和 `max` 为 127，8位无符号属性，可以接收 `min` 为 0，`max` 为 255。如果有需要你可以覆盖默认的 `min` 和 `max` 的值，但是不能超过位数指定的范围。
+當數據的大小指定了， Pony 會自動分配這個屬性的 `min` 和 `max` 值。例如，一個有符號的 8位屬性，可以接收 `min` 為 -128 和 `max` 為 127，8位無符號屬性，可以接收 `min` 為 0，`max` 為 255。如果有需要你可以覆蓋默認的 `min` 和 `max` 的值，但是不能超過位數指定的範圍。
 
->注
-从 Pony Release 0.6 开始，不建议使用 `long` 类型，如果你要存储 64位的整数，需要使用 `int` 类型和 `size=64` 作为替代。如果没有指定 `size` 参数，Pony 会使用数据库的默认整型。
+>註
+從 Pony Release 0.6 開始，不建議使用 `long` 類型，如果你要存儲 64位的整數，需要使用 `int` 類型和 `size=64` 作為替代。如果沒有指定 `size` 參數，Pony 會使用數據庫的默認整型。
 
-### 小数的精度和进制
-对于 `Decimal` 类型， 你可以指定精度和进制。
+### 小數的精度和進制
+對於 `Decimal` 類型， 你可以指定精度和進制。
 ```python
 price = Required(Decimal, 10, 2)   #  DECIMAL(10, 2)
 ```
 
-### 日期和时间的精度
+### 日期和時間的精度
 
-`datetime` 和 `time` 类型接收基于变量位置的精度参数。对于大多数数据库为 6。
+`datetime` 和 `time` 類型接收基於變量位置的精度參數。對於大多數數據庫為 6。
 
-对于 MySQL 数据库，默认值是 0。MySQL 5.6.4 之前，`DATETIME` 和 `TIME` 字段，[无法存储分秒](http://dev.mysql.com/doc/refman/5.6/en/fractional-seconds.html)。MySQL 5.6.4 之后，如果你指定了精度参数为 6，就可以使用分秒。
+對於 MySQL 數據庫，默認值是 0。MySQL 5.6.4 之前，`DATETIME` 和 `TIME` 字段，[無法存儲分秒](http://dev.mysql.com/doc/refman/5.6/en/fractional-seconds.html)。MySQL 5.6.4 之後，如果你指定了精度參數為 6，就可以使用分秒。
 `dt = Required(datetime, 6)`
 
-### 其他属性选项
+### 其他屬性選項
 
-其他能被设为属性选项的参数：
+其他能被設為屬性選項的參數：
 
 - unique 
-布尔值，决定属性是否唯一
+布爾值，決定屬性是否唯一
 
 - auto
-布尔值，只能主键属性使用。如果 `auto=True`，那么属性的值将会自增，基于数据库提供的计数器或者序列。
+布爾值，只能主鍵屬性使用。如果 `auto=True`，那麽屬性的值將會自增，基於數據庫提供的計數器或者序列。
 
 - default
-允许你给属性指定默认值
+允許你給屬性指定默認值
 
 - sql_default
-这个属性允许你指定默认的 SQL 语句，这将在 `CREATE TABLE SQL` 命令执行时起作用。例如：
+這個屬性允許你指定默認的 SQL 語句，這將在 `CREATE TABLE SQL` 命令執行時起作用。例如：
 `created_at = Required(datetime, sql_default='CURRENT_TIMESTAMP')`
-当你有一个 `Required` 属性，而且它的值能在 `INSERT` 命令执行时计算出来，那么使用 `sql_default=True` 会很方便（例如，触发器）。默认是 `None`。
+當你有一個 `Required` 屬性，而且它的值能在 `INSERT` 命令執行時計算出來，那麽使用 `sql_default=True` 會很方便（例如，觸發器）。默認是 `None`。
 
 - index
-允许你控制字段的索引生成。`index=True` —— 将会使用默认的名字创建索引。 `index='index_name'` —— 使用指定的名字创建索引。`index=False` —— 跳过索引的生成。如果没有指定 `index`选项，Pony 依然会使用默认名字创建外键的索引。
+允許你控制字段的索引生成。`index=True` —— 將會使用默認的名字創建索引。 `index='index_name'` —— 使用指定的名字創建索引。`index=False` —— 跳過索引的生成。如果沒有指定 `index`選項，Pony 依然會使用默認名字創建外鍵的索引。
 
 - sql_type
-如果你想对字段创建指定的 SQL 类型，使用这个选项。
+如果你想對字段創建指定的 SQL 類型，使用這個選項。
 
 - lazy
-布尔值，载入对象时延缓载入属性。设置为 `True`，意味着当你直接调用这个属性之前，这个属性是不会载入的。`LongStr` 和 `LongUnicode` 的 `lazy` 默认设置为 `True`，其他类型默认设置为 `False`。
+布爾值，載入對象時延緩載入屬性。設置為 `True`，意味著當你直接調用這個屬性之前，這個屬性是不會載入的。`LongStr` 和 `LongUnicode` 的 `lazy` 默認設置為 `True`，其他類型默認設置為 `False`。
 
 - cascade_delete
-布尔值，控制是否删除关联的对象。`True` 意为 Pony 总是级联的删除，即使关系的另外一边定义是 `Optional`， `False`意为 Pony 总是不做级联的删除。如果关系的另外一边定义是 `Required`，而且 `cascade_delete=False`，那么尝试删除时会抛出一个异常 `ConstraintError`。
+布爾值，控制是否刪除關聯的對象。`True` 意為 Pony 總是級聯的刪除，即使關系的另外一邊定義是 `Optional`， `False`意為 Pony 總是不做級聯的刪除。如果關系的另外一邊定義是 `Required`，而且 `cascade_delete=False`，那麽嘗試刪除時會拋出一個異常 `ConstraintError`。
 
 - column
-指定数据库表中对应字段的名字。
+指定數據庫表中對應字段的名字。
 
 - columns
-制定一个列表，用作数据库表中对应字段组合的名字
+制定一個列表，用作數據庫表中對應字段組合的名字
 
 - reverse
-指定关系中另外一边，对应的属性。
+指定關系中另外一邊，對應的屬性。
 
 - reverse_column
-用于多对多关系，指定中间表中对应字段的名字。
+用於多對多關系，指定中間表中對應字段的名字。
 
 - reverse_columns
-用于多对多关系，如果实体的主键是组合键时，指定中间表中对应字段的名字。
+用於多對多關系，如果實體的主鍵是組合鍵時，指定中間表中對應字段的名字。
 
 - table
-多对多关系中指定中间表的名字。
+多對多關系中指定中間表的名字。
 
 - nullable
-布尔值，`True` 意为数据库中该字段可以设置为 `NULL`，大多数时候你不需要指定这个参数，因为 Pony 会设置核实的值。
+布爾值，`True` 意為數據庫中該字段可以設置為 `NULL`，大多數時候你不需要指定這個參數，因為 Pony 會設置核實的值。
 
 - volatile
-通常是你指定了 Python 属性的值，Pony 存储这个值到数据库。但是有时候在数据库中有一些逻辑，可能修改一个字段的值。例如，你可以在数据库中有一个触发器，会修改最后访问的时间戳。这种情况下你可能需要让 Pony 忘掉对象的属性更新时发送到数据库中的值，在下次访问时使用数据库中的值。设置 `volatile=True` 可以让 Pony 知道这个属性的值可能在数据库中被修改。
-`volatile=True` 可以和 `sql_default=True` 一起使用，如果这个属性完全是由数据库创建和更新的。
-如果当前事务正在使用的值被别的事务修改了，你会得到一个异常：`UnrepeatableReadError: Value ... was updated outside of current transaction`。Pony 之所以要明确提示是因为这种情况可能会破坏应用的业务逻辑，如果你不需要这种竞争性保护，你可以设置 `volatile=True`。
+通常是你指定了 Python 屬性的值，Pony 存儲這個值到數據庫。但是有時候在數據庫中有一些邏輯，可能修改一個字段的值。例如，你可以在數據庫中有一個觸發器，會修改最後訪問的時間戳。這種情況下你可能需要讓 Pony 忘掉對象的屬性更新時發送到數據庫中的值，在下次訪問時使用數據庫中的值。設置 `volatile=True` 可以讓 Pony 知道這個屬性的值可能在數據庫中被修改。
+`volatile=True` 可以和 `sql_default=True` 一起使用，如果這個屬性完全是由數據庫創建和更新的。
+如果當前事務正在使用的值被別的事務修改了，你會得到一個異常：`UnrepeatableReadError: Value ... was updated outside of current transaction`。Pony 之所以要明確提示是因為這種情況可能會破壞應用的業務邏輯，如果你不需要這種競爭性保護，你可以設置 `volatile=True`。
 
 - sequence_name
-对于 Oracle 数据库，指定 `PrimaryKey` 属性使用的序列的名字。
+對於 Oracle 數據庫，指定 `PrimaryKey` 屬性使用的序列的名字。
 
 - py_check
-这个属性允许你制定一个用来检查赋给属性的值的函数。这个函数必须返回 `True` 或者`False`。也可以在检查出错时抛出 `ValueError` 异常。
+這個屬性允許你制定一個用來檢查賦給屬性的值的函數。這個函數必須返回 `True` 或者`False`。也可以在檢查出錯時拋出 `ValueError` 異常。
 
 - min
-指定数字型属性（int, float, Decimal）的最小值，如果你赋值的值小于这个值，会抛出 `ValueError` 异常。
+指定數字型屬性（int, float, Decimal）的最小值，如果你賦值的值小於這個值，會拋出 `ValueError` 異常。
 
 - max
-指定数字型属性（int, float, Decimal）的最大值，如果你赋值的值大于这个值，会抛出 `ValueError` 异常。
+指定數字型屬性（int, float, Decimal）的最大值，如果你賦值的值大於這個值，會拋出 `ValueError` 異常。
 
-## 实体类型的继承
-Pony 中的实体对象的继承和 Python 中规则类似。让我们考虑一个例子，实体对象 `Student` 和 `Professor` 继承自 `Person` ：
+## 實體類型的繼承
+Pony 中的實體對象的繼承和 Python 中規則類似。讓我們考慮一個例子，實體對象 `Student` 和 `Professor` 繼承自 `Person` ：
 
 ```python
 class Person(db.Entity):
@@ -289,7 +289,7 @@ class Professor(Person):
     students = Set("Student")
 ```
 
-子类继承了基类 `Person` 的所有属性和关系。有些映射器（例如，Django）存在一个问题，当使用基类进行查询时没有返回正确的类型：对于指定的实例，查询结果只包含实例的继承来的部分。Pony 没有这个问题，你总是可以得到正确的实体对象的实例：
+子類繼承了基類 `Person` 的所有屬性和關系。有些映射器（例如，Django）存在一個問題，當使用基類進行查詢時沒有返回正確的類型：對於指定的實例，查詢結果只包含實例的繼承來的部分。Pony 沒有這個問題，你總是可以得到正確的實體對象的實例：
 ```python
 for p in Person.select():
     if isinstance(p, Professor):
@@ -299,9 +299,9 @@ for p in Person.select():
     else:  # somebody else
         print p.name
 ```
-为了得到正确的实体对象实例，Pony 使用了额外的区分字段。默认情况下这是一个字符串字段，Pony 使用它来存储实体对象类型的名字。
+為了得到正確的實體對象實例，Pony 使用了額外的區分字段。默認情況下這是一個字符串字段，Pony 使用它來存儲實體對象類型的名字。
 `classtype = Discriminator(str)`
-默认情况下，对于继承的实体类型，Pony 隐式的的创建了 `classtype` 属性。你可以自定义区分字段的名字和类型。如果你改变了区分字段的类型，那就必须指定每一个实体对象的 `_discrimintator_`。让我们看下以下的例子，使用 `cls_id` 作为区分字段，使用 `int` 类型。
+默認情況下，對於繼承的實體類型，Pony 隱式的的創建了 `classtype` 屬性。你可以自定義區分字段的名字和類型。如果你改變了區分字段的類型，那就必須指定每一個實體對象的 `_discrimintator_`。讓我們看下以下的例子，使用 `cls_id` 作為區分字段，使用 `int` 類型。
 ```python
 class Person(db.Entity):
     cls_id = Discriminator(int)
@@ -317,9 +317,9 @@ class Professor(Person):
     ...
 ```
 
-## 多重继承
-Pony 也支持多重继承。如果要使用多重继承，那么当前类的所有父类都必须继承自同一个基类。（菱形继承）。
-让我们看一下这个学生可以当助教的例子。我们引入 `Teacher` 类型，并从它衍生出 `Professor` 和 `TeachingAssistant`。其中， `TeachingAssistant` 继承自 `Student` 和 `Teacher` 两个基类。
+## 多重繼承
+Pony 也支持多重繼承。如果要使用多重繼承，那麽當前類的所有父類都必須繼承自同一個基類。（菱形繼承）。
+讓我們看一下這個學生可以當助教的例子。我們引入 `Teacher` 類型，並從它衍生出 `Professor` 和 `TeachingAssistant`。其中， `TeachingAssistant` 繼承自 `Student` 和 `Teacher` 兩個基類。
 
 ```python
 class Person(db.Entity):
@@ -337,44 +337,44 @@ class Professor(Teacher):
 class TeachingAssistant(Student, Teacher):
     ...
 ```
-`TeachingAssistant` 的对象，既是 `Student` 也是 `Teacher` 的实例，继承了它们所有的属性。多重继承在这里是可行的是因为 `Student` 和 `Teacher` 有相同的基类 `Person`。
-继承是非常强大的，但是要明智的使用它，对于非常简单的数据表，继承的用处不大。
+`TeachingAssistant` 的對象，既是 `Student` 也是 `Teacher` 的實例，繼承了它們所有的屬性。多重繼承在這裏是可行的是因為 `Student` 和 `Teacher` 有相同的基類 `Person`。
+繼承是非常強大的，但是要明智的使用它，對於非常簡單的數據表，繼承的用處不大。
 
-## 继承在数据库中的应用
-在数据库中有三种方法实现继承：
-1. 单一表继承法：继承树中的的所有子类都映射到一个表。
-2. 分类表继承法：继承树中的的每层子类都应到到一个单独的表，但是每个表只存储不是从父类继承的部分。
-3. 完整表继承法：继承中的的每层子类都应到到一个单独的表，每个表都存储了存储实体对象的属性和它的所有的父类。
+## 繼承在數據庫中的應用
+在數據庫中有三種方法實現繼承：
+1. 單一表繼承法：繼承樹中的的所有子類都映射到一個表。
+2. 分類表繼承法：繼承樹中的的每層子類都應到到一個單獨的表，但是每個表只存儲不是從父類繼承的部分。
+3. 完整表繼承法：繼承中的的每層子類都應到到一個單獨的表，每個表都存儲了存儲實體對象的屬性和它的所有的父類。
 
-第三种途径的问题是没有单独的一个表可以存储主键，那就是为什么这种方法很少使用。
+第三種途徑的問題是沒有單獨的一個表可以存儲主鍵，那就是為什麽這種方法很少使用。
 
-第二种方法是最常用的，这就 Django 中继承实现所使用的。这种方法的缺点是取数据的时候需要并表，可能导致性能下降。
+第二種方法是最常用的，這就 Django 中繼承實現所使用的。這種方法的缺點是取數據的時候需要並表，可能導致性能下降。
 
-Pony 使用第一种方式，所有继承树中的实体对象到映射到一张单独的表。这是最有效率的方法，因为不需要并表查询。这种方法也有它的缺点：
+Pony 使用第一種方式，所有繼承樹中的實體對象到映射到一張單獨的表。這是最有效率的方法，因為不需要並表查詢。這種方法也有它的缺點：
 
-- 数据表中的每一条数据可能都有一些字段不能用，因为他们属于其他的实体类型。这不是一个大问题，因为空的字段都会被置位 `NULL`，不占太大空间。
-- 如果继树中有很多的实体对象，数据表可能会有非常多的字段。不同的数据库对最大字段数的限制是不一样的，但是一本都非常大。
+- 數據表中的每一條數據可能都有一些字段不能用，因為他們屬於其他的實體類型。這不是一個大問題，因為空的字段都會被置位 `NULL`，不占太大空間。
+- 如果繼樹中有很多的實體對象，數據表可能會有非常多的字段。不同的數據庫對最大字段數的限制是不一樣的，但是一本都非常大。
 
-第二种方法还有一个好处：当需要增加一个新的实体对象的时候，基类的表是不需要变动的。Pony 以后将会这种方式。
+第二種方法還有一個好處：當需要增加一個新的實體對象的時候，基類的表是不需要變動的。Pony 以後將會這種方式。
 
-## 自定义映射
-当 Pony 从实体对象创建数据表的时候，默认使用实体对象的名字作为表名，使用属性的名字作为字段名，但是你可以重写这个行为。
+## 自定義映射
+當 Pony 從實體對象創建數據表的時候，默認使用實體對象的名字作為表名，使用屬性的名字作為字段名，但是你可以重寫這個行為。
 
-数据表名字也不总是等于实体对象的名字： 在 MySQL 和 PostgreSQL，数据表名来自实体对象的名字转换为小写，在 Oracle 中转为大写。总是可以通过读取 `_table_` 属性来知道对应的数据表。
+數據表名字也不總是等於實體對象的名字： 在 MySQL 和 PostgreSQL，數據表名來自實體對象的名字轉換為小寫，在 Oracle 中轉為大寫。總是可以通過讀取 `_table_` 屬性來知道對應的數據表。
 
-如果你需要设置你自己的数据库表名，使用 `_table_`属性。
+如果你需要設置你自己的數據庫表名，使用 `_table_`屬性。
 ```python
 class Person(db.Entity):
     _table_ = "person_table"
     name = Required(str)
 ```
-如果你需要设置你自己的字段名，使用 `column` 选项。
+如果你需要設置你自己的字段名，使用 `column` 選項。
 ```python
 class Person(db.Entity):
     _table_ = "person_table"
     name = Required(str, column="person_name")
 ```
-对于组合属性，使用 `columns` 和名字的列表：
+對於組合屬性，使用 `columns` 和名字的列表：
 ```python
 class Course(db.Entity):
     name = Required(str)
@@ -386,9 +386,9 @@ class Lecture(db.Entity):
     date = Required(datetime)
     course = Required(Course, columns=["name_of_course", "semester"])
 ```
-在这个例子中，我们重写了组合属性  `Lecture.course` 的字段名。默认情况 Pony 将使用 `"course_name"` 和 `"course_semester"`， 由实体对象名字和属性名字连接而成方便程序员识别。
+在這個例子中，我們重寫了組合屬性  `Lecture.course` 的字段名。默認情況 Pony 將使用 `"course_name"` 和 `"course_semester"`， 由實體對象名字和屬性名字連接而成方便程序員識別。
 
-如果你想要自定义多对多关系中的中间表的名字，你需要使用对 `Set` 属性使用 `column` 或 `columns` 选项，让我们看下面的例子：
+如果你想要自定義多對多關系中的中間表的名字，你需要使用對 `Set` 屬性使用 `column` 或 `columns` 選項，讓我們看下面的例子：
 
 ```python
 from pony.orm import *
@@ -408,7 +408,7 @@ class Course(db.Entity):
 sql_debug(True)
 db.generate_mapping(create_tables=True)
 ```
-默认情况下，为了存储 `Student` 和 `Course` 的多对多关系, Pony 会创建 `"Course_Student"` 中间表（中间表的名字是实体对象的名字按照首字母字母表的顺序相连）。这个表将会有三个字段 `"course_name"`, `"course_semester"` 和 `"student"` ，`Course` 的组合主键占用两个，和 `Student` 的占用一个字段。如果我们要 `"Study_Plans"` 包含字段： `"course"`, `"semester"` 和 `"student_id"`，以下代码片段实现了这个目的：
+默認情況下，為了存儲 `Student` 和 `Course` 的多對多關系, Pony 會創建 `"Course_Student"` 中間表（中間表的名字是實體對象的名字按照首字母字母表的順序相連）。這個表將會有三個字段 `"course_name"`, `"course_semester"` 和 `"student"` ，`Course` 的組合主鍵占用兩個，和 `Student` 的占用一個字段。如果我們要 `"Study_Plans"` 包含字段： `"course"`, `"semester"` 和 `"student_id"`，以下代碼片段實現了這個目的：
 
 ```python
 class Student(db.Entity):
@@ -421,4 +421,4 @@ class Course(db.Entity):
     students = Set(Student, column="student_id")
     PrimaryKey(name, semester)
 ```
-更多关于自定义映射的内容可以查看 [PonyORM 包中带的例子](https://github.com/ponyorm/pony/blob/orm/pony/orm/examples/university.py)。 
+更多關於自定義映射的內容可以查看 [PonyORM 包中帶的例子](https://github.com/ponyorm/pony/blob/orm/pony/orm/examples/university.py)。 
