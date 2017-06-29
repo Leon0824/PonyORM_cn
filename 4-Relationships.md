@@ -1,6 +1,6 @@
-# 关系
+# 關系
 
-实体对象可以和其他实体对象建立关系。一条关系是由关系两边的实体对象的两条属性定义的：
+實體對象可以和其他實體對象建立關系。一條關系是由關系兩邊的實體對象的兩條屬性定義的：
 ```python
 class Customer(db.Entity):
     orders = Set("Order")
@@ -8,22 +8,22 @@ class Customer(db.Entity):
 class Order(db.Entity):
     customer = Required(Customer)
 ```
-在上面的示例中，我们有两个关系属性：`orders` 和 `customer`。当我们定义 `Customer` 的时候， `Orders` 还没有定义，所以需要使用引号将 `Orders`o 括起来。也可以使用 lambda 表达式：
+在上面的示例中，我們有兩個關系屬性：`orders` 和 `customer`。當我們定義 `Customer` 的時候， `Orders` 還沒有定義，所以需要使用引號將 `Orders`o 括起來。也可以使用 lambda 表達式：
 
 ```python
 class Customer(db.Entity):
     orders = Set(lambda: Order)
 ```
-如果你想要 IDE 帮你检查实体对象名字的拼写高亮拼写错误，这种方法很有用。
+如果你想要 IDE 幫你檢查實體對象名字的拼寫高亮拼寫錯誤，這種方法很有用。
 
-有一些映射器（例如，django）只需要在一边定义关系就可以了。Pony 需要在关系的两边都明确的定义（就像 Python 之禅说的：明确比暗示好），用户在每个角度都能看到所有的关系定义。
+有一些映射器（例如，django）只需要在一邊定義關系就可以了。Pony 需要在關系的兩邊都明確的定義（就像 Python 之禪說的：明確比暗示好），用戶在每個角度都能看到所有的關系定義。
 
-所有的关系都是双向的。如果你更新了关系的一边，另一边会自动更新。如果我们创建了一个 `Orders` 的实例，customer 的 orders 集合会更新，添加了这条新的 order。
+所有的關系都是雙向的。如果你更新了關系的一邊，另一邊會自動更新。如果我們創建了一個 `Orders` 的實例，customer 的 orders 集合會更新，添加了這條新的 order。
 
-有三种类型的关系：一对一，一对多，多对多。一对一关系很少使用，大多数关系形式都是一对多和多对多。如果两个实体对象拥有一对一关系，那基本上就意味着这两个实体对象可以合并为一个。如果你的数据表中包含很多一对一关系，那就意味着你需要重新思考实体对象的定义了。
+有三種類型的關系：一對一，一對多，多對多。一對一關系很少使用，大多數關系形式都是一對多和多對多。如果兩個實體對象擁有一對一關系，那基本上就意味著這兩個實體對象可以合並為一個。如果你的數據表中包含很多一對一關系，那就意味著你需要重新思考實體對象的定義了。
 
-## 一对多关系
-这里有一个一对多关系的例子：
+## 一對多關系
+這裏有一個一對多關系的例子：
 ```python
 class Order(db.Entity):
     items = Set("OrderItem")
@@ -31,7 +31,7 @@ class Order(db.Entity):
 class OrderItem(db.Entity):
     order = Required(Order)
 ```
-上例中，没有 order 的情况下就不能建立 `OrderItem` 的实例，如果我们想建立一个不需要指定 order 的 `OrderItem` 实例，我们可以指定 `order` 属性为 `Optional`。
+上例中，沒有 order 的情況下就不能建立 `OrderItem` 的實例，如果我們想建立一個不需要指定 order 的 `OrderItem` 實例，我們可以指定 `order` 屬性為 `Optional`。
 
 ```python
 class Order(db.Entity):
@@ -41,8 +41,8 @@ class OrderItem(db.Entity):
     order = Optional(Order)
 ```
 
-## 多对多关系
-为了建立多对多关系，你需要在关系的两边都使用 `Set` 属性。
+## 多對多關系
+為了建立多對多關系，你需要在關系的兩邊都使用 `Set` 屬性。
 ```python
 class Product(db.Entity):
     tags = Set("Tag")
@@ -50,10 +50,10 @@ class Product(db.Entity):
 class Tag(db.Entity):
     products = Set(Product)
 ```
-为了在数据库中实现这个关系，Pony 将会创建一个中间表。这是众所周知的在数据库中建立多对多关系的方法。
+為了在數據庫中實現這個關系，Pony 將會創建一個中間表。這是眾所周知的在數據庫中建立多對多關系的方法。
 
-## 一对一关系
-为了建立一对一关系，关系属性需要设置为 `Optional-Required` 或 `Optional-Optional`:
+## 一對一關系
+為了建立一對一關系，關系屬性需要設置為 `Optional-Required` 或 `Optional-Optional`:
 
 ```python
 class Person(db.Entity):
@@ -62,12 +62,12 @@ class Person(db.Entity):
 class Passport(db.Entity):
     person = Required("Person")
 ```
-两个属性都是 `Required` 是不允许的，因为这不合理。
+兩個屬性都是 `Required` 是不允許的，因為這不合理。
 
 ## 自引用
-实体对象可以通过自引用建立指向自己的关系。这种关系可以有两种类型：相称的和不相称的。不相称的关系就是一个实体对象里的两个属性建立的关系。
+實體對象可以通過自引用建立指向自己的關系。這種關系可以有兩種類型：相稱的和不相稱的。不相稱的關系就是一個實體對象裏的兩個屬性建立的關系。
 
-相称的关系特殊的地方就是这条关系只有一条属性，这条属性定义了关系的两边。这种关系可以是一对一也可以是多对多。如下是自引用关系的例子：
+相稱的關系特殊的地方就是這條關系只有一條屬性，這條屬性定義了關系的兩邊。這種關系可以是一對一也可以是多對多。如下是自引用關系的例子：
 ```python
 class Person(db.Entity):
     name = Required(str)
@@ -77,8 +77,8 @@ class Person(db.Entity):
     employees = Set("Person", reverse="manager") # another side of non-symmetric
 ```
 
-## 两个实体对象间的多种关系
-当两个实体类型之间的关系多于一条的时候，Pony 需要 reverse 属性来加以区分。这是为了让 Pony 知道那两个属性是一对。像我们考虑一下这个 user 既可以写微博，又可以给微博点赞的数据表。
+## 兩個實體對象間的多種關系
+當兩個實體類型之間的關系多於一條的時候，Pony 需要 reverse 屬性來加以區分。這是為了讓 Pony 知道那兩個屬性是一對。像我們考慮一下這個 user 既可以寫微博，又可以給微博點讚的數據表。
 ```python
 class User(db.Entity):
     tweets = Set("Tweet", reverse="author")
@@ -88,7 +88,4 @@ class Tweet(db.Entity):
     author = Required(User, reverse="tweets")
     favorited = Set(User, reverse="favorites")
 ```
-在上例中，我们必须指定 `reverse` 属性。当你尝试生成映射但是没有提供`reverse` 属性时，你会得到一个异常  `pony.orm.core.ERDiagramError: "Ambiguous reverse attribute for Tweet.author"`。之所以会这样是因为 `author` 属性在技术角度既可以和 `tweets` 配对，又可以和 `favorites` 配对，Pony 没有足够的信息区分。
-
-
-
+在上例中，我們必須指定 `reverse` 屬性。當你嘗試生成映射但是沒有提供`reverse` 屬性時，你會得到一個異常  `pony.orm.core.ERDiagramError: "Ambiguous reverse attribute for Tweet.author"`。之所以會這樣是因為 `author` 屬性在技術角度既可以和 `tweets` 配對，又可以和 `favorites` 配對，Pony 沒有足夠的信息區分。
