@@ -1,19 +1,19 @@
-# 事务
+# 事務
 
-事务是一组逻辑上的工作单元，可以由一个或多个语句组成。事务是原子的，那就是说，当通过事务改变数据库的时候，要么事务成功所有的改变都成功，要么事务回滚，所有的改变都没做。
+事務是一組邏輯上的工作單元，可以由一個或多個語句組成。事務是原子的，那就是說，當通過事務改變數據庫的時候，要麽事務成功所有的改變都成功，要麽事務回滾，所有的改變都沒做。
 
-Pony 使用数据库 session 来实现事务关系。
+Pony 使用數據庫 session 來實現事務關系。
 
-## 通过数据库 session 来工作
-和数据库交互的代码都必须工作在数据库 session 之下。session 定义了数据库会话的边界。由数据库操作的每一个线程会建立一个单独的数据库 session ，使用一个单独的 Identity Map。Identity Map 像个缓存一样工作，当你通过主键或者唯一性键查询对象的时候，如果身份映射表已经有了，就避免了再次查询数据库。为了使用数据库 session 来操作数据库，你可以使用装饰器 `@db_session` 或者 `db_session` 上下文管理器。当一个 session 结束的时候，它完成了以下动作。
+## 通過數據庫 session 來工作
+和數據庫交互的代碼都必須工作在數據庫 session 之下。session 定義了數據庫會話的邊界。由數據庫操作的每一個線程會建立一個單獨的數據庫 session ，使用一個單獨的 Identity Map。Identity Map 像個緩存一樣工作，當你通過主鍵或者唯一性鍵查詢對象的時候，如果身份映射表已經有了，就避免了再次查詢數據庫。為了使用數據庫 session 來操作數據庫，你可以使用裝飾器 `@db_session` 或者 `db_session` 上下文管理器。當一個 session 結束的時候，它完成了以下動作。
 
-- 如果数据被改变了，而且没有异常，那么提交事务。如果有异常发生，回滚事务。
-- 将数据库连接归还到数据库连接池。
-- 清空 Identity Map 缓存。
+- 如果數據被改變了，而且沒有異常，那麽提交事務。如果有異常發生，回滾事務。
+- 將數據庫連接歸還到數據庫連接池。
+- 清空 Identity Map 緩存。
 
-如果你在必要的地方没有指定 `db_session`，Pony 会抛出异常 `TransactionError: db_session is required when working with the database`。
+如果你在必要的地方沒有指定 `db_session`，Pony 會拋出異常 `TransactionError: db_session is required when working with the database`。
 
-使用 `@db_session` 装饰器的例子:
+使用 `@db_session` 裝飾器的例子:
 ```python
 @db_session
 def check_user(username):
@@ -29,26 +29,26 @@ def process_request():
         ...
 ```
 
->注
-当你使用 Python 交互器来操作时，你不用考虑数据库会话的问题，因为 Pony 已经自动替你维护了。
+>註
+當你使用 Python 交互器來操作時，你不用考慮數據庫會話的問題，因為 Pony 已經自動替你維護了。
 
-当你尝试访问 `db_session` 区域外的实例的属性（非数据库自动创建的），你会得到一个异常 `DatabaseSessionIsOver`，例如：
+當你嘗試訪問 `db_session` 區域外的實例的屬性（非數據庫自動創建的），你會得到一個異常 `DatabaseSessionIsOver`，例如：
 
 ```python
 DatabaseSessionIsOver: Cannot load attribute Customer[3].name: the database session is over
 ```
 
-之所以有这种事情是因为，数据库连接已经返还到连接池，事务已经关闭，已经不能传送任何命令到数据库。
+之所以有這種事情是因為，數據庫連接已經返還到連接池，事務已經關閉，已經不能傳送任何命令到數據庫。
 
-当 Pony 从数据库中读取对象的时候，它将对象放到 Identity Map。之后，当你更新对象的属性，创建珊处对象时，改变会首先增量的保存到 Identity Map。改变会在事务提交的时候，或者在调用 `select()`、 `get()`、 `exists()`、 `execute()` 之前，保存到数据库。
+當 Pony 從數據庫中讀取對象的時候，它將對象放到 Identity Map。之後，當你更新對象的屬性，創建珊處對象時，改變會首先增量的保存到 Identity Map。改變會在事務提交的時候，或者在調用 `select()`、 `get()`、 `exists()`、 `execute()` 之前，保存到數據庫。
 
-### 事物的范围
-一般情况下，使用 `db_session`，你就有了一个事务。没用明确的开启事务的命令。事务将在第一条 SQL 语句发送到数据库的时候执行。在发送第一条语句之前， Pony 会从连接池中获取一个数据库连接。之后的 SQL 语句都会使用相同的上下文执行。
+### 事物的範圍
+一般情況下，使用 `db_session`，你就有了一個事務。沒用明確的開啟事務的命令。事務將在第一條 SQL 語句發送到數據庫的時候執行。在發送第一條語句之前， Pony 會從連接池中獲取一個數據庫連接。之後的 SQL 語句都會使用相同的上下文執行。
 
->注
-SQLite 的 Python 驱动不在 SELECT 语句上开启事务。只有在能改变数据库状态的语句上才会开启事务，有：INSERT, UPDATE, DELETE。其他驱动在任何命令上都会开启事务，包括 SELECT 。
+>註
+SQLite 的 Python 驅動不在 SELECT 語句上開啟事務。只有在能改變數據庫狀態的語句上才會開啟事務，有：INSERT, UPDATE, DELETE。其他驅動在任何命令上都會開啟事務，包括 SELECT 。
 
-事务在使用 `commit()` 提交的时候结束，或者在 `rollback()` 调用的时候回滚，或者离开 `db_session` 区域。
+事務在使用 `commit()` 提交的時候結束，或者在 `rollback()` 調用的時候回滾，或者離開 `db_session` 區域。
 
 ```python
 @db_session
@@ -62,9 +62,9 @@ def func():
 ```
 
 Several transactions within the same db_session
-### 一个 db_session 下的多个事务 
+### 一個 db_session 下的多個事務 
 
-如果你需要在一个事务中包含多个数据库 session，你可以 session 范围下任何时候调用 `commit()` 或 `rollback()`，同时下一条语句会开启一个新的事务，手动调用 `commit()` 之后, Identity Map 保留了数据缓存，你可以使用 `rollback()` 清除缓存。
+如果你需要在一個事務中包含多個數據庫 session，你可以 session 範圍下任何時候調用 `commit()` 或 `rollback()`，同時下一條語句會開啟一個新的事務，手動調用 `commit()` 之後, Identity Map 保留了數據緩存，你可以使用 `rollback()` 清除緩存。
 
 ```python
 @db_session
@@ -78,19 +78,19 @@ def func1():
 
 ### db_session 的嵌套
 
-如果你递归的进入 `db_session` 的区域，`@db_session`修饰的函数调用了另一个 `@db_session`修饰的函数，Pony 将不会创建新的 session，而是将原来的 session 共享给两个函数。数据库 session 将在离开最外层的 `db_session` 修饰器或这上下文管理器时关闭。
+如果你遞歸的進入 `db_session` 的區域，`@db_session`修飾的函數調用了另一個 `@db_session`修飾的函數，Pony 將不會創建新的 session，而是將原來的 session 共享給兩個函數。數據庫 session 將在離開最外層的 `db_session` 修飾器或這上下文管理器時關閉。
 
-### db_session 的缓存
+### db_session 的緩存
 
-为了提高性能，Pony 在如下几种情况缓存数据：
+為了提高性能，Pony 在如下幾種情況緩存數據：
 
-- 生成器表达式的执行结果。如果一条生成器表达式被调用了多次，只会向数据库发送一次数据。这个缓存是实体对象程序全局的，不属于单个的 session 。
-- 数据库创建或载入的对象。Pony 保留这些对象到 Identity Map ，离开 `db_session` 区域或者事务回滚的时候清除。
-- 执行结果。相同参数的相同语句会直接从缓存中返回结果。实例改变一次缓存清空一次。离开 `db_session` 区域或者事务回滚的时候缓存清除。
+- 生成器表達式的執行結果。如果一條生成器表達式被調用了多次，只會向數據庫發送一次數據。這個緩存是實體對象程序全局的，不屬於單個的 session 。
+- 數據庫創建或載入的對象。Pony 保留這些對象到 Identity Map ，離開 `db_session` 區域或者事務回滾的時候清除。
+- 執行結果。相同參數的相同語句會直接從緩存中返回結果。實例改變一次緩存清空一次。離開 `db_session` 區域或者事務回滾的時候緩存清除。
 
-### 多数据库
+### 多數據庫
 
-Pony 可以同时使用多个数据库。下面的例子中我们使用 PostgreSQL 存储用户信息，用 MySQL 存储地址信息。
+Pony 可以同時使用多個數據庫。下面的例子中我們使用 PostgreSQL 存儲用戶信息，用 MySQL 存儲地址信息。
 ```python
 db1 = Database("postgres", ...)
 
@@ -108,90 +108,90 @@ def do_something(user_id, address_id):
     a = Address[address_id]
     ...
 ```
-当退出 `do_something()` 函数时， Pony 对所有的数据库执行 `commit()` 或 `rollback()`，如果有必要。
+當退出 `do_something()` 函數時， Pony 對所有的數據庫執行 `commit()` 或 `rollback()`，如果有必要。
 
-## 事务的相关函数
+## 事務的相關函數
 
 - commit()
-使用 flush() 函数存储当前 `db_session`下的所有修改，提交事务到数据库。顶层的 `commit()` 会调用 当前事务所用到的数据库对象的 commit() 方法。
+使用 flush() 函數存儲當前 `db_session`下的所有修改，提交事務到數據庫。頂層的 `commit()` 會調用 當前事務所用到的數據庫對象的 commit() 方法。
 
 - rollback()
-回滚当前事务。顶层的 `rollback()` 会调用 当前事务所用到的数据库对象的 rollback() 方法。
+回滾當前事務。頂層的 `rollback()` 會調用 當前事務所用到的數據庫對象的 rollback() 方法。
 
 - flush()
-将 `db_session` 缓存中的变动保存到数据库，不包含提交数据变动。大多数情况，Pony 自动从数据库会话缓存中将数据保存到数据库，不需要你自己调用这个函数。有一种情况你需要调用它，当你想在 commit 之前获取一个新对象自动获取的主键的时候。
+將 `db_session` 緩存中的變動保存到數據庫，不包含提交數據變動。大多數情況，Pony 自動從數據庫會話緩存中將數據保存到數據庫，不需要你自己調用這個函數。有一種情況你需要調用它，當你想在 commit 之前獲取一個新對象自動獲取的主鍵的時候。
 
-Pony 总是在执行
-`select()`、 `get()`、 `exists()`、 `execute()` 和 `commit()` 前自动增量式保存变化到 `db_session` 缓存。
-`flush()` 函数让 `db_session` 缓存中的更新在当前事务下的数据库访问中生效。同时，`flush()`并没有真正将数据存入数据库。
-顶层的 `flush()` 会调用 当前事务所用到的数据库对象的 flush() 方法。
+Pony 總是在執行
+`select()`、 `get()`、 `exists()`、 `execute()` 和 `commit()` 前自動增量式保存變化到 `db_session` 緩存。
+`flush()` 函數讓 `db_session` 緩存中的更新在當前事務下的數據庫訪問中生效。同時，`flush()`並沒有真正將數據存入數據庫。
+頂層的 `flush()` 會調用 當前事務所用到的數據庫對象的 flush() 方法。
 
-## db_session 的参数
-之前已经提到 `db_session` 可以作为修饰器或者上下文管理器。`db_session` 可以接收以下参数。
+## db_session 的參數
+之前已經提到 `db_session` 可以作為修飾器或者上下文管理器。`db_session` 可以接收以下參數。
 
 - retry
-接收一个整数值，指定尝试提交这个事务的次数。这个参数只能在修饰器形式下使用。被修饰的函数不能直接调用 `commit()` 和 `rollback()`。当指定了这个参数，Pony 将缓存 `TransactionError` 以及它的派生类的异常，然后重置事务。默认情况下 Pony 只缓存 `TransactionError` 异常，但是这个列表可以被 `retry_exceptions`参数重写。
+接收一個整數值，指定嘗試提交這個事務的次數。這個參數只能在修飾器形式下使用。被修飾的函數不能直接調用 `commit()` 和 `rollback()`。當指定了這個參數，Pony 將緩存 `TransactionError` 以及它的派生類的異常，然後重置事務。默認情況下 Pony 只緩存 `TransactionError` 異常，但是這個列表可以被 `retry_exceptions`參數重寫。
 
 - retry_exceptions
-接收一个列表，指定这些异常将会导致事务重启。默认情况下，这个参数值是 `[TransactionError]`。另外的选择是指定一个回调函数，这个回调函数接收一个参数 —— 当前发生的异常。如果这个函数返回 `True`，事务将会重启。
+接收一個列表，指定這些異常將會導致事務重啟。默認情況下，這個參數值是 `[TransactionError]`。另外的選擇是指定一個回調函數，這個回調函數接收一個參數 —— 當前發生的異常。如果這個函數返回 `True`，事務將會重啟。
 
 - allowed_exceptions
-这个参数接收一个异常列表，当这些异常发生时，失误不会回滚。例如，一些 HTTP 框架通过异常来触发跳转。
+這個參數接收一個異常列表，當這些異常發生時，失誤不會回滾。例如，一些 HTTP 框架通過異常來觸發跳轉。
 
 - immediate
-接受一个布尔值，默认值是 `False`。一些数据库（例如，SQLite，Postgres）只有当提交更改数据的语句（UPDATE，INSERT，DELETE）时开启一个事务，SELECT 命令则不会。如果你想在 SELECT 时也开启事务，可以通过传递 `True` 到这个参数。通常情况下没必要改变这个值。
+接受一個布爾值，默認值是 `False`。一些數據庫（例如，SQLite，Postgres）只有當提交更改數據的語句（UPDATE，INSERT，DELETE）時開啟一個事務，SELECT 命令則不會。如果你想在 SELECT 時也開啟事務，可以通過傳遞 `True` 到這個參數。通常情況下沒必要改變這個值。
 
 - serializable
-接受一个布尔值，默认值是 `False`。允许你设置 SERIALIZABLE 串行化的等级。
+接受一個布爾值，默認值是 `False`。允許你設置 SERIALIZABLE 串行化的等級。
 
-## 乐观的并发控制
-为了提升性能，Pony 默认使用乐观的并发控制。基于这个观点，Pony 并不获取数据的锁。而是确认并没有别的会话尝试读取或修改相同的数据。如果检测到冲突的修改，事务提交时抛出异常 `OptimisticCheckError, 'Object XYZ was updated outside of current transaction'`，然后回滚。
+## 樂觀的並發控制
+為了提升性能，Pony 默認使用樂觀的並發控制。基於這個觀點，Pony 並不獲取數據的鎖。而是確認並沒有別的會話嘗試讀取或修改相同的數據。如果檢測到沖突的修改，事務提交時拋出異常 `OptimisticCheckError, 'Object XYZ was updated outside of current transaction'`，然後回滾。
 
-面对这种情况我们应该怎么做？首先，这种行为在使用 [MVCC](http://en.wikipedia.org/wiki/Multiversion_concurrency_control) 模式的数据库（例如，Postgre，Oracle）是很常见的。例如，在 Postgres 中，在不同事务同时修改相同的数据时，你会得到如下错误：
+面對這種情況我們應該怎麽做？首先，這種行為在使用 [MVCC](http://en.wikipedia.org/wiki/Multiversion_concurrency_control) 模式的數據庫（例如，Postgre，Oracle）是很常見的。例如，在 Postgres 中，在不同事務同時修改相同的數據時，你會得到如下錯誤：
 `ERROR: could not serialize access due to concurrent update`
-当前事务被回滚，但是它可以被重新开始。为了自动重试事务，你可以在 `db_session` 修饰器使用 `retry` 参数（在本章后面查看更多细节）。
+當前事務被回滾，但是它可以被重新開始。為了自動重試事務，你可以在 `db_session` 修飾器使用 `retry` 參數（在本章後面查看更多細節）。
 
-Pony 怎么做这种乐观的检查？Pony 跟踪每个对象的属性的访问。当用户的代码读或修改一个对象的属性时，Pony 检查这个属性的值是否有待提交到数据库的残余内容。这种方式可以避免丢失数据更新，有一种情况，当当前事务和并发的别的事务修改相同的对象时，当前事务覆盖了数据了，掩盖了之前的修改。
+Pony 怎麽做這種樂觀的檢查？Pony 跟蹤每個對象的屬性的訪問。當用戶的代碼讀或修改一個對象的屬性時，Pony 檢查這個屬性的值是否有待提交到數據庫的殘余內容。這種方式可以避免丟失數據更新，有一種情況，當當前事務和並發的別的事務修改相同的對象時，當前事務覆蓋了數據了，掩蓋了之前的修改。
 
-在乐观的检查中，Pony 只检查用户读或写的属性。在 Pony 更新对象的时候，也是只更新用户修改了的属性。在这种运行方式下，两个不同的事务更新对象的不同属性，然后都成功了，这是可能的。
+在樂觀的檢查中，Pony 只檢查用戶讀或寫的屬性。在 Pony 更新對象的時候，也是只更新用戶修改了的屬性。在這種運行方式下，兩個不同的事務更新對象的不同屬性，然後都成功了，這是可能的。
 
-通常乐观的并发控制可以提升性能，因为事务执行可以避免请求锁和等待别的事务释放锁。这种方法在冲突很少和读笔写多得多的情况下表现良好。
+通常樂觀的並發控制可以提升性能，因為事務執行可以避免請求鎖和等待別的事務釋放鎖。這種方法在沖突很少和讀筆寫多得多的情況下表現良好。
 
-## 悲观的锁
+## 悲觀的鎖
 
-有些时候我们需要锁定数据库中的对象，来避免其他事务修改相同的记录。在数据库中可以使用 `SELECT FOR UPDATE` 语句。在 Pony 中要生成这种可以使用 `for_update` 方法。
+有些時候我們需要鎖定數據庫中的對象，來避免其他事務修改相同的記錄。在數據庫中可以使用 `SELECT FOR UPDATE` 語句。在 Pony 中要生成這種可以使用 `for_update` 方法。
  `select(p for p in Product if p.price > 100).for_update()`
-上面语句选定的符合价格大于 100 的 Product 的实例都将被锁定。在当前事务提交或回滚之后，锁会被释放。
+上面語句選定的符合價格大於 100 的 Product 的實例都將被鎖定。在當前事務提交或回滾之後，鎖會被釋放。
 
-如果你需要锁定一个对象，你可以使用 `get_for_update` 方法。
+如果你需要鎖定一個對象，你可以使用 `get_for_update` 方法。
 `Product.get_for_update(id=123)`
-当你尝试用 `for_update` 锁定一个对象的时候，如果它已经被另外的事务锁定了，你的请求将不得不等待行级别的锁被释放。为了避免这种情况，使用 `nowait=True`:
+當你嘗試用 `for_update` 鎖定一個對象的時候，如果它已經被另外的事務鎖定了，你的請求將不得不等待行級別的鎖被釋放。為了避免這種情況，使用 `nowait=True`:
 ```python
 select(p for p in Product if p.price > 100).for_update(nowait=True)
 
 Product.get_for_update(id=123, nowait=True)
 ```
-这种情况下，如果选定的行不能被马上锁定，当前请求将会报告一个错误而不是等待。
-消极的锁的主要问题是性能下降，因为数据库锁的消耗和对并发的限制。
+這種情況下，如果選定的行不能被馬上鎖定，當前請求將會報告一個錯誤而不是等待。
+消極的鎖的主要問題是性能下降，因為數據庫鎖的消耗和對並發的限制。
 
-## 事务隔离和数据库差别
-隔离是一个属性，定义了当一个事务修改了数据之后，多久别的并行事务能够看到修改。ANSI SQL 标准规定了四个等级。
+## 事務隔離和數據庫差別
+隔離是一個屬性，定義了當一個事務修改了數據之後，多久別的並行事務能夠看到修改。ANSI SQL 標準規定了四個等級。
 
-- READ UNCOMMITTED - 最不安全的等级
+- READ UNCOMMITTED - 最不安全的等級
 - READ COMMITTED
 - REPEATABLE READ
-- SERIALIZABLE - 最安全的等级
+- SERIALIZABLE - 最安全的等級
 
-当使用 SERIALIZABLE 等级的时候，每个事务都将数据库看成事务开始时的一个快照。这个等级提供最大程度的数据隔离，但是比其他等级需要等多的资源。
+當使用 SERIALIZABLE 等級的時候，每個事務都將數據庫看成事務開始時的一個快照。這個等級提供最大程度的數據隔離，但是比其他等級需要等多的資源。
 
-这就是为什么大多数数据库使用更低的隔离等级以允许更好的并发。默认情况下，Oracle 和 PostgreSQL 使用 READ COMMITTED, MySQL - REPEATABLE READ. SQLite 只支持 SERIALIZABLE，但是 Pony 模拟了 READ COMMITTED，支持更好的并发。
+這就是為什麽大多數數據庫使用更低的隔離等級以允許更好的並發。默認情況下，Oracle 和 PostgreSQL 使用 READ COMMITTED, MySQL - REPEATABLE READ. SQLite 只支持 SERIALIZABLE，但是 Pony 模擬了 READ COMMITTED，支持更好的並發。
 
-如果你希望 Pony 使用 `SERIALIZABLE` 等级的事务，你可以给 `@db_session` 修饰器或 `db_session` 上文管理器指定 `serializable=True` 参数。
+如果你希望 Pony 使用 `SERIALIZABLE` 等級的事務，你可以給 `@db_session` 修飾器或 `db_session` 上文管理器指定 `serializable=True` 參數。
 
 ## READ COMMITTED vs. SERIALIZABLE 模式
-在 `SERIALIZABLE` 模式，你总是需要应对得到 `“Can’t serialize access due to concurrent update”` 错误，而且还要重试事务直到成功。在 SERIALIZABLE 模式事务写数据库，总是需要在你的应用中写重试循环。
+在 `SERIALIZABLE` 模式，你總是需要應對得到 `“Can’t serialize access due to concurrent update”` 錯誤，而且還要重試事務直到成功。在 SERIALIZABLE 模式事務寫數據庫，總是需要在你的應用中寫重試循環。
 
-在 `READ COMMITTED` 模式，如果你希望在并发的事务中避免新修改相同的数据，你应该使用 `SELECT FOR UPDATE`。但是这种情况下有可能导致数据库[死锁](http://en.wikipedia.org/wiki/Deadlock) —— 这种情况就是一个事务在等待另一个事务锁定的资源。如果你的事务陷入死锁，就需要重启事务。所以你无论如何都需要一个重试循环。Pony 可以自动重试一个事务，如果你指定了 `retry` 参数给 `@db_session` 修饰器（ 不能是 `db_session` 上文管理器）。
+在 `READ COMMITTED` 模式，如果你希望在並發的事務中避免新修改相同的數據，你應該使用 `SELECT FOR UPDATE`。但是這種情況下有可能導致數據庫[死鎖](http://en.wikipedia.org/wiki/Deadlock) —— 這種情況就是一個事務在等待另一個事務鎖定的資源。如果你的事務陷入死鎖，就需要重啟事務。所以你無論如何都需要一個重試循環。Pony 可以自動重試一個事務，如果你指定了 `retry` 參數給 `@db_session` 修飾器（ 不能是 `db_session` 上文管理器）。
 
 ```python
 @db_session(retry=3)
@@ -200,25 +200,25 @@ def your_function():
 ```
 
 ### PostgreSQL
-PostgreSQL 默认使用 READ COMMITTED 隔离等级。PostgreSQL 也提供自动提交模式。在这种模式下，每条 SQL 语句都运行在一个独立的事务中。当你的应用只是读取数据库中的数据，自动提交模式可以更有效，因为没必要开启和关闭事务。数据库直接提供了这个功能。从隔离这个角度来说，自动提交模式和 READ COMMITTED 隔离等级没有什么不同，在两种情况下，你的应用都是马上看到已经提交的数据。
+PostgreSQL 默認使用 READ COMMITTED 隔離等級。PostgreSQL 也提供自動提交模式。在這種模式下，每條 SQL 語句都運行在一個獨立的事務中。當你的應用只是讀取數據庫中的數據，自動提交模式可以更有效，因為沒必要開啟和關閉事務。數據庫直接提供了這個功能。從隔離這個角度來說，自動提交模式和 READ COMMITTED 隔離等級沒有什麽不同，在兩種情況下，你的應用都是馬上看到已經提交的數據。
 
-Pony 自动在自动提交模式和明确的开启一个事务之间切换，当你的应用需要使用 INSERT、 UPDATE 或 DELETE SQL 来原子的修改数据。
+Pony 自動在自動提交模式和明確的開啟一個事務之間切換，當你的應用需要使用 INSERT、 UPDATE 或 DELETE SQL 來原子的修改數據。
 
 ### SQLite
-当使用 SQLite 的时候，Pony 的行为和使用 PostgreSQL 时类似：当事务启动之后，读取数据将会在自动提交模式执行。这种模式的隔离等级相当于 READ COMMITTED。这种方式下，并发的事务可以被同时执行而没有死锁的风险（Pony 不会抛出 `sqlite3.OperationalError: database is locked` 异常）。当你的代码发布了非独占声明，Pony 会开启一个事务，然后之后的 SQL 语句也会使用这个事务执行。事务将会是 SERIALIZABLE 隔离等级。
+當使用 SQLite 的時候，Pony 的行為和使用 PostgreSQL 時類似：當事務啟動之後，讀取數據將會在自動提交模式執行。這種模式的隔離等級相當於 READ COMMITTED。這種方式下，並發的事務可以被同時執行而沒有死鎖的風險（Pony 不會拋出 `sqlite3.OperationalError: database is locked` 異常）。當你的代碼發布了非獨占聲明，Pony 會開啟一個事務，然後之後的 SQL 語句也會使用這個事務執行。事務將會是 SERIALIZABLE 隔離等級。
 
 ### MySQL
-MySQL 默认使用 REPEATABLE READ 隔离等级。Pony 将不会在 MySQL 使用自动提交模式，因为这无利可图。事务在第一条 SQL 语句发送到数据库的时候开启，即使这条语句是 SELECT 。
+MySQL 默認使用 REPEATABLE READ 隔離等級。Pony 將不會在 MySQL 使用自動提交模式，因為這無利可圖。事務在第一條 SQL 語句發送到數據庫的時候開啟，即使這條語句是 SELECT 。
 
 ### Oracle
-Oracle 默认使用 READ COMMITTED 隔离等级。Oracle 没有自动提交模式。事务在第一条 SQL 语句发送到数据库的时候开启，即使这条语句是 SELECT 。
+Oracle 默認使用 READ COMMITTED 隔離等級。Oracle 沒有自動提交模式。事務在第一條 SQL 語句發送到數據庫的時候開啟，即使這條語句是 SELECT 。
 
-## Pony 怎样避免丢失更新数据
-低的隔离等级在许多用户同时访问数据的时候提升了性能，但是这也有可能导致数据库异常，例如丢失更新。
+## Pony 怎樣避免丟失更新數據
+低的隔離等級在許多用戶同時訪問數據的時候提升了性能，但是這也有可能導致數據庫異常，例如丟失更新。
 
-让我们考虑一种情境。我们有两个账户，我们需要提供一个函数将一个账户的钱转到另一个账户。在转账的过程中，我们需要检查账户中的钱是否足够。
+讓我們考慮一種情境。我們有兩個賬戶，我們需要提供一個函數將一個賬戶的錢轉到另一個賬戶。在轉賬的過程中，我們需要檢查賬戶中的錢是否足夠。
 
-假如我们使用 Django ORM 。下面是一个可能的例子实现了这个函数。
+假如我們使用 Django ORM 。下面是一個可能的例子實現了這個函數。
 
 ```python
 @transaction.atomic
@@ -232,27 +232,27 @@ def transfer_money(account_id1, account_id2, amount):
     account2.amount += amount
     account2.save()
 ```
-在 Django 中默认，`save()` 在单独的一个事务中运行。如果在第一个 `save()` 之后有一个错误，这笔钱就消失了。即使没有错误，如果另外一个事务在两个 `save()` 之间访问账户，结果将是错误的。为了避免这个问题，所有的操作都必须在一个事务中完成。我们可以通过用 `@transaction.atomic` 装饰器装饰这个函数。
+在 Django 中默認，`save()` 在單獨的一個事務中運行。如果在第一個 `save()` 之後有一個錯誤，這筆錢就消失了。即使沒有錯誤，如果另外一個事務在兩個 `save()` 之間訪問賬戶，結果將是錯誤的。為了避免這個問題，所有的操作都必須在一個事務中完成。我們可以通過用 `@transaction.atomic` 裝飾器裝飾這個函數。
 
-但是否即使这样，我们还会碰到一个问题。如果两个支行同时向第三个账户汇款，操作都将会被执行。每个函数都传递了值但是后完成的事务将会覆盖先完成的那个。这种异常叫做“丢失更新数据”。
+但是否即使這樣，我們還會碰到一個問題。如果兩個支行同時向第三個賬戶匯款，操作都將會被執行。每個函數都傳遞了值但是後完成的事務將會覆蓋先完成的那個。這種異常叫做“丟失更新數據”。
 
-有三种方法来避免这种异常:
+有三種方法來避免這種異常:
 
-- 使用 SERIALIZABLE 隔离等级
+- 使用 SERIALIZABLE 隔離等級
 - SELECT FOR UPDATE 替代 SELECT
-- 使用乐观的检查
+- 使用樂觀的檢查
 
-如果你使用 SERIALIZABLE 隔离等级，数据库将不会允许第二个请求，在提交阶段会抛出一个异常。这种方法的缺点是需要更多的系统资源。
+如果你使用 SERIALIZABLE 隔離等級，數據庫將不會允許第二個請求，在提交階段會拋出一個異常。這種方法的缺點是需要更多的系統資源。
 
-如果你使用 SELECT FOR UPDATE ，事务将会竞争数据库，先到的会锁定这行数据，另外一个将会等待。
+如果你使用 SELECT FOR UPDATE ，事務將會競爭數據庫，先到的會鎖定這行數據，另外一個將會等待。
 
-乐观的检查会不多占用系统资源，也不会锁定数据库。它通过确保数据不会在从数据库读取到提交的期间被改变来排除丢失数据异常。
+樂觀的檢查會不多占用系統資源，也不會鎖定數據庫。它通過確保數據不會在從數據庫讀取到提交的期間被改變來排除丟失數據異常。
 
-Django 中避免丢失数据的唯一方法是使用 SELECT FOR UPDATE，而且你必须明确的指定它。如果你遗忘了或者没有意识到，那么这个问题就是就会存在于你的业务逻辑中，有可能导致数据遗失。
+Django 中避免丟失數據的唯一方法是使用 SELECT FOR UPDATE，而且你必須明確的指定它。如果你遺忘了或者沒有意識到，那麽這個問題就是就會存在於你的業務邏輯中，有可能導致數據遺失。
 
-三种方法 Pony 都允许使用，第三种方法，乐观的检查，默认是开启的。使用这种方式，Pony 完全避免了数据更新时的丢失问题。使用乐观的检查也允许更高的并发，因为它并不锁定数据库，也不需要额外的资源。
+三種方法 Pony 都允許使用，第三種方法，樂觀的檢查，默認是開啟的。使用這種方式，Pony 完全避免了數據更新時的丟失問題。使用樂觀的檢查也允許更高的並發，因為它並不鎖定數據庫，也不需要額外的資源。
 
-在 Pony 中类似的转账函数将会是这个样子：
+在 Pony 中類似的轉賬函數將會是這個樣子：
 
 ```python
 @db_session(serializable=True)
@@ -277,7 +277,7 @@ def transfer_money(account_id1, account_id2, amount):
     account2.amount += amount
 ```
 
-使用乐观检查的方法
+使用樂觀檢查的方法
 ```python
 @db_session
 def transfer_money(account_id1, account_id2, amount):
@@ -289,4 +289,4 @@ def transfer_money(account_id1, account_id2, amount):
     account2.amount += amount
 ```
 
-最后这种方法是 Pony 默认的，而且不需要明确的增加别的东西。
+最後這種方法是 Pony 默認的，而且不需要明確的增加別的東西。
